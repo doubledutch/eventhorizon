@@ -72,6 +72,12 @@ func (s *PostgresEventStore) Save(events []Event) error {
 		return ErrNoEventsToAppend
 	}
 
+	tx, err := s.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
 	for _, event := range events {
 		// Get an existing aggregate, if any
 		var existing []postgresAggregateRecord
@@ -133,6 +139,13 @@ func (s *PostgresEventStore) Save(events []Event) error {
 			}
 		}
 
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	for _, event := range events {
 		// Publish event on the bus.
 		if s.eventBus != nil {
 			s.eventBus.PublishEvent(event)
@@ -153,7 +166,7 @@ func (s *PostgresEventStore) Load(id UUID) ([]Event, error) {
 
 	var rawEvents []*postgresEventRecord
 	err = s.db.Select(&rawEvents,
-		`SELECT * FROM events WHERE aggregrateid=$1`, id.String())
+		`SELECT * FROM events WHERE aggregrateid=$1 ORDER BY timestamp ASC`, id.String())
 	if err != nil {
 		return nil, ErrNoEventsFound
 	}
