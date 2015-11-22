@@ -12,29 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package example contains a simple runnable example of a CQRS/ES app.
-
-// +build mongo
-
-package main
+package eventhorizon
 
 import (
-	"github.com/looplab/eventhorizon"
-	"github.com/looplab/eventhorizon/examples/common"
+	. "gopkg.in/check.v1"
 )
 
-func main() {
-	eventBus := eventhorizon.NewInternalEventBus()
-	addr := "localhost"
-	db := "demo"
+type MemoryReadRepositorySuite struct {
+	ReadRepositorySuite
+}
 
-	newEventStore := func() (eventhorizon.RemoteEventStore, error) {
-		return eventhorizon.NewMongoEventStore(eventBus, addr, db)
-	}
+var _ = Suite(&MemoryReadRepositorySuite{})
 
-	newReadRepository := func(name string) (eventhorizon.RemoteReadRepository, error) {
-		return eventhorizon.NewMongoReadRepository(addr, db, name)
-	}
+func (s *MemoryReadRepositorySuite) SetUpTest(c *C) {
+	s.Setup(NewMemoryReadRepository())
+}
 
-	common.Run(eventBus, newEventStore, newReadRepository)
+func (s *MemoryReadRepositorySuite) TestNewMemoryReadRepository(c *C) {
+	repo := NewMemoryReadRepository()
+	c.Assert(repo, Not(Equals), nil)
+	c.Assert(repo.data, Not(Equals), nil)
+	c.Assert(len(repo.data), Equals, 0)
 }

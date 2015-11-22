@@ -12,18 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// +build mongo
-
-package main
+package common
 
 import (
 	"github.com/looplab/eventhorizon"
 )
 
 type InviteCreated struct {
-	InvitationID eventhorizon.UUID `bson:"invitation_id"`
-	Name         string            `bson:"name"`
-	Age          int               `bson:"age"`
+	InvitationID eventhorizon.UUID `bson:"invitation_id" json:"id"`
+	EventID      eventhorizon.UUID `bson:"event_id" json:"event_id"`
+	Name         string            `bson:"name" json:"name"`
+	Age          int               `bson:"age" json:"age"`
 }
 
 func (c *InviteCreated) AggregateID() eventhorizon.UUID { return c.InvitationID }
@@ -31,7 +30,7 @@ func (c *InviteCreated) AggregateType() string          { return "Invitation" }
 func (c *InviteCreated) EventType() string              { return "InviteCreated" }
 
 type InviteAccepted struct {
-	InvitationID eventhorizon.UUID `bson:"invitation_id"`
+	InvitationID eventhorizon.UUID `bson:"invitation_id" json:"id"`
 }
 
 func (c *InviteAccepted) AggregateID() eventhorizon.UUID { return c.InvitationID }
@@ -39,7 +38,7 @@ func (c *InviteAccepted) AggregateType() string          { return "Invitation" }
 func (c *InviteAccepted) EventType() string              { return "InviteAccepted" }
 
 type InviteDeclined struct {
-	InvitationID eventhorizon.UUID `bson:"invitation_id"`
+	InvitationID eventhorizon.UUID `bson:"invitation_id" json:"id"`
 }
 
 func (c *InviteDeclined) AggregateID() eventhorizon.UUID { return c.InvitationID }

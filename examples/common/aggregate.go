@@ -12,9 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// +build mongo
-
-package main
+package common
 
 import (
 	"fmt"
@@ -43,7 +41,7 @@ func (i *InvitationAggregate) AggregateType() string {
 func (i *InvitationAggregate) HandleCommand(command eventhorizon.Command) error {
 	switch command := command.(type) {
 	case *CreateInvite:
-		i.StoreEvent(&InviteCreated{command.InvitationID, command.Name, command.Age})
+		i.StoreEvent(&InviteCreated{command.InvitationID, command.EventID, command.Name, command.Age})
 		return nil
 
 	case *AcceptInvite:
