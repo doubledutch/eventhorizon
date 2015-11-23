@@ -22,3 +22,7 @@ _testmain.go
 *.exe
 *.test
 *.prof
+
+# Example binaries
+examples/postgres/postgres*
+examples/mongo/mongo*

@@ -116,6 +116,10 @@ func (m *MockRepository) Save(aggregate Aggregate) error {
 	return nil
 }
 
+func (m *MockRepository) Close() error {
+	return nil
+}
+
 type MockEventStore struct {
 	events []Event
 	loaded UUID
@@ -129,6 +133,10 @@ func (m *MockEventStore) Save(events []Event) error {
 func (m *MockEventStore) Load(id UUID) ([]Event, error) {
 	m.loaded = id
 	return m.events, nil
+}
+
+func (m *MockEventStore) Close() error {
+	return nil
 }
 
 type MockEventBus struct {

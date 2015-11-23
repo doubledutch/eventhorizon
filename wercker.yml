@@ -3,6 +3,7 @@ box: wercker/golang
 services:
     - wercker/mongodb
     - wercker/redis
+    - wercker/postgresql
 
 build:
   steps:
@@ -16,13 +17,13 @@ build:
         code: |
           cd $WERCKER_SOURCE_DIR
           go version
-          go get -tags 'mongo redis' -t ./...
+          go get -tags 'mongo redis postgres' -t ./...
 
     # Build the project
     - script:
         name: go build
         code: |
-          go build -tags 'mongo redis' ./...
+          go build -tags 'mongo redis postgres' ./...
 
     # Test the project
     - script:
@@ -32,5 +33,5 @@ build:
           go get github.com/axw/gocov/gocov
           go get github.com/mattn/goveralls
           git checkout master
-          gocov test -tags 'mongo redis' > gocov.json
+          gocov test -tags 'mongo redis postgres' > gocov.json
           goveralls -gocovdata=gocov.json -service wercker.com -repotoken $COVERALLS_TOKEN

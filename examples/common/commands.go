@@ -12,9 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// +build mongo
-
-package main
+package common
 
 import (
 	"github.com/looplab/eventhorizon"
@@ -22,6 +20,7 @@ import (
 
 type CreateInvite struct {
 	InvitationID eventhorizon.UUID
+	EventID      eventhorizon.UUID
 	Name         string
 	Age          int `eh:"optional"`
 }

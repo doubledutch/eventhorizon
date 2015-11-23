@@ -24,7 +24,7 @@ import (
 var _ = Suite(&CallbackRepositorySuite{})
 
 type CallbackRepositorySuite struct {
-	store *MockEventStore
+	store EventStore
 	repo  *CallbackRepository
 }
 

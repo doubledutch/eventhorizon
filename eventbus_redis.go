@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// +build redis
-
 package eventhorizon
 
 import (
@@ -146,7 +144,7 @@ func (b *RedisEventBus) RegisterEventType(event Event, factory func() Event) err
 }
 
 // Close exits the recive goroutine by unsubscribing to all channels.
-func (b *RedisEventBus) Close() {
+func (b *RedisEventBus) Close() error {
 	err := b.conn.PUnsubscribe()
 	if err != nil {
 		log.Printf("error: event bus close: %v\n", err)
@@ -156,6 +154,7 @@ func (b *RedisEventBus) Close() {
 	if err != nil {
 		log.Printf("error: event bus close: %v\n", err)
 	}
+	return err
 }
 
 func (b *RedisEventBus) publishGlobal(event Event) {

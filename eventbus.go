@@ -32,6 +32,14 @@ type EventBus interface {
 	AddGlobalHandler(EventHandler)
 }
 
+// RemoteEventBus is EventBus that uses a networked service
+type RemoteEventBus interface {
+	EventBus
+	RemoteHandler
+	// Close cleans up any connections
+	Close() error
+}
+
 // InternalEventBus is an event bus that notifies registered EventHandlers of
 // published events.
 type InternalEventBus struct {
