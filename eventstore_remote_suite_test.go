@@ -1,6 +1,7 @@
 package eventhorizon
 
 import (
+	"github.com/odeke-em/go-uuid"
 	. "gopkg.in/check.v1"
 )
 
@@ -19,12 +20,16 @@ func (s *RemoteEventStoreSuite) Setup(store RemoteEventStore, c *C) {
 }
 
 func (s *RemoteEventStoreSuite) TearDownTest(c *C) {
+	if s.Store == nil {
+		return
+	}
+
 	err := s.Store.Close()
 	c.Assert(err, IsNil)
 }
 
 func (s *RemoteEventStoreSuite) Test_NotRegisteredEvent(c *C) {
-	event1 := &TestEventOther{NewUUID(), "event1"}
+	event1 := &TestEventOther{uuid.New(), "event1"}
 	err := s.Store.Save([]Event{event1})
 	c.Assert(err, IsNil)
 	events, err := s.Store.Load(event1.TestID)

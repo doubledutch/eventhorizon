@@ -32,9 +32,15 @@ type RedisEventBusSuite struct {
 }
 
 func (s *RedisEventBusSuite) SetUpSuite(c *C) {
-	// Support Wercker testing with MongoDB.
-	host := os.Getenv("WERCKER_REDIS_HOST")
-	port := os.Getenv("WERCKER_REDIS_PORT")
+	// Support Wercker testing with Redis.
+	host := os.Getenv("REDIS_PORT_6379_TCP_ADDR")
+	if host == "" {
+		host = os.Getenv("WERCKER_REDIS_HOST")
+	}
+	port := os.Getenv("REDIS_PORT_6379_TCP_PORT")
+	if port == "" {
+		port = os.Getenv("WERCKER_REDIS_PORT")
+	}
 
 	if host != "" && port != "" {
 		s.url = host + ":" + port
@@ -67,7 +73,7 @@ func (s *RedisEventBusSuite) TearDownTest(c *C) {
 
 func (s *RedisEventBusSuite) Test_NewHandlerEventBus(c *C) {
 	bus, err := NewRedisEventBus("test", s.url, "")
-	c.Assert(bus, NotNil)
 	c.Assert(err, IsNil)
+	c.Assert(bus, NotNil)
 	bus.Close()
 }

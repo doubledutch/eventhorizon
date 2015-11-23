@@ -21,9 +21,9 @@ import (
 )
 
 type Invitation struct {
-	ID     eventhorizon.UUID `json:"id"`
-	Name   string            `json:"name"`
-	Status string            `json:"status"`
+	ID     string `json:"id"`
+	Name   string `json:"name"`
+	Status string `json:"status"`
 }
 
 // Projector that writes to a read model
@@ -73,10 +73,10 @@ func (p *InvitationProjector) HandleEvent(event eventhorizon.Event) {
 }
 
 type GuestList struct {
-	ID          eventhorizon.UUID `json:"id"`
-	NumGuests   int               `json:"num_guests"`
-	NumAccepted int               `json:"num_accepted"`
-	NumDeclined int               `json:"num_declined"`
+	ID          string `json:"id"`
+	NumGuests   int    `json:"num_guests"`
+	NumAccepted int    `json:"num_accepted"`
+	NumDeclined int    `json:"num_declined"`
 }
 
 // Projector that writes to a read model
@@ -85,11 +85,11 @@ type GuestList struct {
 // one guest list.
 type GuestListProjector struct {
 	repository eventhorizon.ReadRepository
-	eventID    eventhorizon.UUID
+	eventID    string
 }
 
 // NewGuestListProjector creates a new GuestListProjector.
-func NewGuestListProjector(repository eventhorizon.ReadRepository, eventID eventhorizon.UUID) *GuestListProjector {
+func NewGuestListProjector(repository eventhorizon.ReadRepository, eventID string) *GuestListProjector {
 	p := &GuestListProjector{
 		repository: repository,
 		eventID:    eventID,

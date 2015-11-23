@@ -14,33 +14,29 @@
 
 package common
 
-import (
-	"github.com/looplab/eventhorizon"
-)
-
 type InviteCreated struct {
-	InvitationID eventhorizon.UUID `bson:"invitation_id" json:"id"`
-	EventID      eventhorizon.UUID `bson:"event_id" json:"event_id"`
-	Name         string            `bson:"name" json:"name"`
-	Age          int               `bson:"age" json:"age"`
+	InvitationID string `bson:"invitation_id" json:"id"`
+	EventID      string `bson:"event_id" json:"event_id"`
+	Name         string `bson:"name" json:"name"`
+	Age          int    `bson:"age" json:"age"`
 }
 
-func (c *InviteCreated) AggregateID() eventhorizon.UUID { return c.InvitationID }
-func (c *InviteCreated) AggregateType() string          { return "Invitation" }
-func (c *InviteCreated) EventType() string              { return "InviteCreated" }
+func (c *InviteCreated) AggregateID() string   { return c.InvitationID }
+func (c *InviteCreated) AggregateType() string { return "Invitation" }
+func (c *InviteCreated) EventType() string     { return "InviteCreated" }
 
 type InviteAccepted struct {
-	InvitationID eventhorizon.UUID `bson:"invitation_id" json:"id"`
+	InvitationID string `bson:"invitation_id" json:"id"`
 }
 
-func (c *InviteAccepted) AggregateID() eventhorizon.UUID { return c.InvitationID }
-func (c *InviteAccepted) AggregateType() string          { return "Invitation" }
-func (c *InviteAccepted) EventType() string              { return "InviteAccepted" }
+func (c *InviteAccepted) AggregateID() string   { return c.InvitationID }
+func (c *InviteAccepted) AggregateType() string { return "Invitation" }
+func (c *InviteAccepted) EventType() string     { return "InviteAccepted" }
 
 type InviteDeclined struct {
-	InvitationID eventhorizon.UUID `bson:"invitation_id" json:"id"`
+	InvitationID string `bson:"invitation_id" json:"id"`
 }
 
-func (c *InviteDeclined) AggregateID() eventhorizon.UUID { return c.InvitationID }
-func (c *InviteDeclined) AggregateType() string          { return "Invitation" }
-func (c *InviteDeclined) EventType() string              { return "InviteDeclined" }
+func (c *InviteDeclined) AggregateID() string   { return c.InvitationID }
+func (c *InviteDeclined) AggregateType() string { return "Invitation" }
+func (c *InviteDeclined) EventType() string     { return "InviteDeclined" }

@@ -18,6 +18,7 @@ import (
 	// "fmt"
 	// "time"
 
+	"github.com/odeke-em/go-uuid"
 	. "gopkg.in/check.v1"
 )
 
@@ -69,7 +70,7 @@ func (t *TestRepositoryAggregate) ApplyEvent(event Event) {
 
 func (s *CallbackRepositorySuite) Test_Load_NoEvents(c *C) {
 	err := s.repo.RegisterAggregate(&TestRepositoryAggregate{},
-		func(id UUID) Aggregate {
+		func(id string) Aggregate {
 			return &TestRepositoryAggregate{
 				AggregateBase: NewAggregateBase(id),
 			}
@@ -77,7 +78,7 @@ func (s *CallbackRepositorySuite) Test_Load_NoEvents(c *C) {
 	)
 	c.Assert(err, IsNil)
 
-	id := NewUUID()
+	id := uuid.New()
 	agg, err := s.repo.Load("TestRepositoryAggregate", id)
 	c.Assert(err, IsNil)
 	c.Assert(agg.AggregateID(), Equals, id)
@@ -86,7 +87,7 @@ func (s *CallbackRepositorySuite) Test_Load_NoEvents(c *C) {
 
 func (s *CallbackRepositorySuite) Test_Load_Events(c *C) {
 	err := s.repo.RegisterAggregate(&TestRepositoryAggregate{},
-		func(id UUID) Aggregate {
+		func(id string) Aggregate {
 			return &TestRepositoryAggregate{
 				AggregateBase: NewAggregateBase(id),
 			}
@@ -94,7 +95,7 @@ func (s *CallbackRepositorySuite) Test_Load_Events(c *C) {
 	)
 	c.Assert(err, IsNil)
 
-	id := NewUUID()
+	id := uuid.New()
 	event1 := &TestEvent{id, "event"}
 	s.store.Save([]Event{event1})
 	agg, err := s.repo.Load("TestRepositoryAggregate", id)
@@ -105,7 +106,7 @@ func (s *CallbackRepositorySuite) Test_Load_Events(c *C) {
 }
 
 func (s *CallbackRepositorySuite) Test_Save_Events(c *C) {
-	id := NewUUID()
+	id := uuid.New()
 	agg := &TestRepositoryAggregate{
 		AggregateBase: NewAggregateBase(id),
 	}
@@ -123,7 +124,7 @@ func (s *CallbackRepositorySuite) Test_Save_Events(c *C) {
 }
 
 func (s *CallbackRepositorySuite) Test_NotRegistered(c *C) {
-	id := NewUUID()
+	id := uuid.New()
 	agg, err := s.repo.Load("TestRepositoryAggregate", id)
 	c.Assert(err, Equals, ErrAggregateNotRegistered)
 	c.Assert(agg, IsNil)
@@ -131,7 +132,7 @@ func (s *CallbackRepositorySuite) Test_NotRegistered(c *C) {
 
 func (s *CallbackRepositorySuite) Test_RegisterTwice(c *C) {
 	err := s.repo.RegisterAggregate(&TestRepositoryAggregate{},
-		func(id UUID) Aggregate {
+		func(id string) Aggregate {
 			return &TestRepositoryAggregate{
 				AggregateBase: NewAggregateBase(id),
 			}
@@ -140,7 +141,7 @@ func (s *CallbackRepositorySuite) Test_RegisterTwice(c *C) {
 	c.Assert(err, IsNil)
 
 	err = s.repo.RegisterAggregate(&TestRepositoryAggregate{},
-		func(id UUID) Aggregate {
+		func(id string) Aggregate {
 			return &TestRepositoryAggregate{
 				AggregateBase: NewAggregateBase(id),
 			}

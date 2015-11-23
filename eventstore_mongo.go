@@ -72,7 +72,7 @@ func (s *MongoEventStore) Save(events []Event) error {
 	for _, event := range events {
 		// Get an existing aggregate, if any.
 		var existing []mongoAggregateRecord
-		err := sess.DB(s.db).C("events").FindId(event.AggregateID().String()).
+		err := sess.DB(s.db).C("events").FindId(event.AggregateID()).
 			Select(bson.M{"version": 1}).Limit(1).All(&existing)
 		if err != nil || len(existing) > 1 {
 			return ErrCouldNotLoadAggregate
@@ -95,7 +95,7 @@ func (s *MongoEventStore) Save(events []Event) error {
 		// Either insert a new aggregate or append to an existing.
 		if len(existing) == 0 {
 			aggregate := mongoAggregateRecord{
-				AggregateID: event.AggregateID().String(),
+				AggregateID: event.AggregateID(),
 				Version:     1,
 				Events:      []*mongoEventRecord{r},
 			}
@@ -112,7 +112,7 @@ func (s *MongoEventStore) Save(events []Event) error {
 			// since the query above).
 			err = sess.DB(s.db).C("events").Update(
 				bson.M{
-					"_id":     event.AggregateID().String(),
+					"_id":     event.AggregateID(),
 					"version": existing[0].Version,
 				},
 				bson.M{
@@ -136,12 +136,12 @@ func (s *MongoEventStore) Save(events []Event) error {
 
 // Load loads all events for the aggregate id from the database.
 // Returns ErrNoEventsFound if no events can be found.
-func (s *MongoEventStore) Load(id UUID) ([]Event, error) {
+func (s *MongoEventStore) Load(id string) ([]Event, error) {
 	sess := s.session.Copy()
 	defer sess.Close()
 
 	var aggregate mongoAggregateRecord
-	err := sess.DB(s.db).C("events").FindId(id.String()).One(&aggregate)
+	err := sess.DB(s.db).C("events").FindId(id).One(&aggregate)
 	if err != nil {
 		return nil, ErrNoEventsFound
 	}

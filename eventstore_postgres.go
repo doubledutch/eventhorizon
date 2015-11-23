@@ -4,9 +4,9 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"time"
 
+	"github.com/doubledutch/lager"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -18,6 +18,8 @@ type PostgresEventStore struct {
 	eventBus  EventBus
 	db        *sqlx.DB
 	factories map[string]func() Event
+
+	lgr lager.ContextLager
 }
 
 type postgresAggregateRecord struct {
@@ -35,12 +37,17 @@ type postgresEventRecord struct {
 
 // NewPostgresEventStore creates a new PostgresEventStore.
 func NewPostgresEventStore(eventBus EventBus, conn string) (*PostgresEventStore, error) {
+	lgr := lager.Child()
+
 	db, err := initDB(conn)
 	if err != nil {
+		lgr.WithError(err).Errorf("Unable to initialize database")
 		return nil, err
 	}
 
 	if _, err = db.Exec(`
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA public;
+
 CREATE TABLE IF NOT EXISTS aggregrates (
   id uuid NOT NULL,
   version int NOT NULL
@@ -55,7 +62,7 @@ CREATE TABLE IF NOT EXISTS events(
 )
     `); err != nil {
 		db.Close()
-		fmt.Println(err)
+		lgr.WithError(err).Errorf("Unable to initialize tables")
 		return nil, ErrCouldNotCreateTables
 	}
 
@@ -63,6 +70,7 @@ CREATE TABLE IF NOT EXISTS events(
 		eventBus:  eventBus,
 		db:        db,
 		factories: make(map[string]func() Event),
+		lgr:       lgr,
 	}, nil
 }
 
@@ -82,7 +90,7 @@ func (s *PostgresEventStore) Save(events []Event) error {
 		// Get an existing aggregate, if any
 		var existing []postgresAggregateRecord
 		err := s.db.Select(&existing,
-			`SELECT * FROM aggregrates WHERE id=$1 LIMIT 2`, event.AggregateID().String())
+			`SELECT * FROM aggregrates WHERE id=$1 LIMIT 2`, event.AggregateID())
 		if (err != nil && err != sql.ErrNoRows) || len(existing) > 1 {
 			return ErrCouldNotLoadAggregate
 		}
@@ -95,7 +103,7 @@ func (s *PostgresEventStore) Save(events []Event) error {
 
 		// Create the event record with timestamp
 		r := &postgresEventRecord{
-			AggregrateID: event.AggregateID().String(),
+			AggregrateID: event.AggregateID(),
 			Type:         event.EventType(),
 			Version:      1,
 			Timestamp:    time.Now(),
@@ -104,7 +112,7 @@ func (s *PostgresEventStore) Save(events []Event) error {
 
 		if len(existing) == 0 {
 			aggregrate := postgresAggregateRecord{
-				AggregateID: event.AggregateID().String(),
+				AggregateID: event.AggregateID(),
 				Version:     1,
 			}
 
@@ -156,17 +164,17 @@ func (s *PostgresEventStore) Save(events []Event) error {
 }
 
 // Load loads all events for the aggregate id from the store.
-func (s *PostgresEventStore) Load(id UUID) ([]Event, error) {
+func (s *PostgresEventStore) Load(id string) ([]Event, error) {
 	var aggregrate postgresAggregateRecord
 	err := s.db.Get(&aggregrate,
-		`SELECT * FROM aggregrates WHERE id=$1 LIMIT 1`, id.String())
+		`SELECT * FROM aggregrates WHERE id=$1 LIMIT 1`, id)
 	if err != nil {
 		return nil, ErrNoEventsFound
 	}
 
 	var rawEvents []*postgresEventRecord
 	err = s.db.Select(&rawEvents,
-		`SELECT * FROM events WHERE aggregrateid=$1 ORDER BY timestamp ASC`, id.String())
+		`SELECT * FROM events WHERE aggregrateid=$1 ORDER BY timestamp ASC`, id)
 	if err != nil {
 		return nil, ErrNoEventsFound
 	}

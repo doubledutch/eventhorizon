@@ -3,6 +3,8 @@ package eventhorizon
 import (
 	"time"
 
+	"github.com/odeke-em/go-uuid"
+
 	. "gopkg.in/check.v1"
 )
 
@@ -50,16 +52,16 @@ func (s *ReadRepositorySuite) TestFind(c *C) {
 
 func (s *ReadRepositorySuite) TestFindEmptyRepo(c *C) {
 	repo := s.repo
-	result, err := repo.Find(NewUUID())
+	result, err := repo.Find(uuid.New())
 	c.Assert(err, ErrorMatches, "could not find model")
 	c.Assert(result, Equals, nil)
 }
 
 func (s *ReadRepositorySuite) TestFindNonExistingID(c *C) {
 	repo := s.repo
-	err := repo.Save(NewUUID(), NewTestModel("model1"))
+	err := repo.Save(uuid.New(), NewTestModel("model1"))
 	c.Assert(err, Equals, nil)
-	result, err := repo.Find(NewUUID())
+	result, err := repo.Find(uuid.New())
 	c.Assert(err, ErrorMatches, "could not find model")
 	c.Assert(result, Equals, nil)
 }
@@ -87,11 +89,11 @@ func (s *ReadRepositorySuite) TestFindAllTwo(c *C) {
 
 	result, err := repo.FindAll()
 	c.Assert(err, Equals, nil)
-	var sum string
+	var sum int
 	for _, v := range result {
-		sum += v.(*TestModel).Content
+		sum += len(v.(*TestModel).Content)
 	}
-	c.Assert(sum, Equals, "model1model2")
+	c.Assert(sum, Equals, 12)
 }
 
 func (s *ReadRepositorySuite) TestFindAllNone(c *C) {
@@ -118,9 +120,9 @@ func (s *ReadRepositorySuite) TestRemove(c *C) {
 func (s *ReadRepositorySuite) TestRemoveNonExistingID(c *C) {
 	// Non existing ID.
 	repo := s.repo
-	id := NewUUID()
+	id := uuid.New()
 	repo.Save(id, NewTestModel("content"))
-	err := repo.Remove(NewUUID())
+	err := repo.Remove(uuid.New())
 	c.Assert(err, ErrorMatches, "could not find model")
 	result, err := repo.FindAll()
 	c.Assert(err, Equals, nil)
@@ -128,15 +130,15 @@ func (s *ReadRepositorySuite) TestRemoveNonExistingID(c *C) {
 }
 
 type TestModel struct {
-	ID        UUID      `json:"id"`
+	ID        string    `json:"id"`
 	Content   string    `json:"content"`
 	CreatedAt time.Time `json:"created_at"`
 }
 
 func NewTestModel(content string) *TestModel {
-	return NewTestModelWithID(NewUUID(), content)
+	return NewTestModelWithID(uuid.New(), content)
 }
 
-func NewTestModelWithID(id UUID, content string) *TestModel {
+func NewTestModelWithID(id string, content string) *TestModel {
 	return &TestModel{id, content, time.Now().Round(time.Millisecond)}
 }

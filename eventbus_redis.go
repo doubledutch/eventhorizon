@@ -91,12 +91,6 @@ func NewRedisEventBusWithPool(appID string, pool *redis.Pool) (*RedisEventBus, e
 
 // PublishEvent publishes an event to all handlers capable of handling it.
 func (b *RedisEventBus) PublishEvent(event Event) {
-	if handlers, ok := b.eventHandlers[event.EventType()]; ok {
-		for handler := range handlers {
-			handler.HandleEvent(event)
-		}
-	}
-
 	// Publish to local handlers.
 	for handler := range b.localHandlers {
 		handler.HandleEvent(event)
@@ -197,6 +191,12 @@ func (b *RedisEventBus) receiveGlobal(ready chan struct{}) {
 			if err := data.Unmarshal(event); err != nil {
 				log.Printf("error: event bus receive: %v\n", ErrCouldNotUnmarshalEvent)
 				continue
+			}
+
+			if handlers, ok := b.eventHandlers[event.EventType()]; ok {
+				for handler := range handlers {
+					handler.HandleEvent(event)
+				}
 			}
 
 			for handler := range b.globalHandlers {

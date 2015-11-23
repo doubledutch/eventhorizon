@@ -24,7 +24,7 @@ package eventhorizon
 // These fields can take an optional "eh" tag, which adds properties. For now
 // only "optional" is a valid tag: `eh:"optional"`.
 type Command interface {
-	AggregateID() UUID
+	AggregateID() string
 	AggregateType() string
 	CommandType() string
 }
@@ -36,7 +36,7 @@ type Command interface {
 //
 // The event should contain all the data needed when applying/handling it.
 type Event interface {
-	AggregateID() UUID
+	AggregateID() string
 	AggregateType() string
 	EventType() string
 }

@@ -22,7 +22,7 @@ package eventhorizon
 // or more commonly embed *AggregateBase to take care of the common methods.
 type Aggregate interface {
 	// AggregateID returns the id of the aggregate.
-	AggregateID() UUID
+	AggregateID() string
 
 	// AggregateType returns the type name of the aggregate.
 	AggregateType() string
@@ -60,13 +60,13 @@ type Aggregate interface {
 // The embedded aggregate is then initialized by the factory function in the
 // callback repository.
 type AggregateBase struct {
-	id                UUID
+	id                string
 	version           int
 	uncommittedEvents []Event
 }
 
 // NewAggregateBase creates an aggregate.
-func NewAggregateBase(id UUID) *AggregateBase {
+func NewAggregateBase(id string) *AggregateBase {
 	return &AggregateBase{
 		id:                id,
 		uncommittedEvents: []Event{},
@@ -74,7 +74,7 @@ func NewAggregateBase(id UUID) *AggregateBase {
 }
 
 // AggregateID returns the ID of the aggregate.
-func (a *AggregateBase) AggregateID() UUID {
+func (a *AggregateBase) AggregateID() string {
 	return a.id
 }
 

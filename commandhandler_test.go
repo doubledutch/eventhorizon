@@ -18,6 +18,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/odeke-em/go-uuid"
+
 	. "gopkg.in/check.v1"
 )
 
@@ -30,14 +32,14 @@ type AggregateCommandHandlerSuite struct {
 
 func (s *AggregateCommandHandlerSuite) SetUpTest(c *C) {
 	s.repo = &MockRepository{
-		aggregates: make(map[UUID]Aggregate),
+		aggregates: make(map[string]Aggregate),
 	}
 	s.handler, _ = NewAggregateCommandHandler(s.repo)
 }
 
 func (s *AggregateCommandHandlerSuite) Test_NewDispatcher(c *C) {
 	repo := &MockRepository{
-		aggregates: make(map[UUID]Aggregate),
+		aggregates: make(map[string]Aggregate),
 	}
 	handler, err := NewAggregateCommandHandler(repo)
 	c.Assert(handler, NotNil)
@@ -78,7 +80,7 @@ func (t *TestDispatcherAggregate) ApplyEvent(event Event) {
 
 func (s *AggregateCommandHandlerSuite) Test_Simple(c *C) {
 	aggregate := &TestDispatcherAggregate{
-		AggregateBase: NewAggregateBase(NewUUID()),
+		AggregateBase: NewAggregateBase(uuid.New()),
 	}
 	s.repo.aggregates[aggregate.AggregateID()] = aggregate
 	s.handler.SetAggregate(aggregate, &TestCommand{})
@@ -90,7 +92,7 @@ func (s *AggregateCommandHandlerSuite) Test_Simple(c *C) {
 
 func (s *AggregateCommandHandlerSuite) Test_ErrorInHandler(c *C) {
 	aggregate := &TestDispatcherAggregate{
-		AggregateBase: NewAggregateBase(NewUUID()),
+		AggregateBase: NewAggregateBase(uuid.New()),
 	}
 	s.repo.aggregates[aggregate.AggregateID()] = aggregate
 	s.handler.SetAggregate(aggregate, &TestCommand{})
@@ -101,7 +103,7 @@ func (s *AggregateCommandHandlerSuite) Test_ErrorInHandler(c *C) {
 }
 
 func (s *AggregateCommandHandlerSuite) Test_NoHandlers(c *C) {
-	command1 := &TestCommand{NewUUID(), "command1"}
+	command1 := &TestCommand{uuid.New(), "command1"}
 	err := s.handler.HandleCommand(command1)
 	c.Assert(err, Equals, ErrAggregateNotFound)
 }
@@ -135,11 +137,11 @@ func (t *BenchmarkDispatcherAggregate) ApplyEvent(event Event) {
 
 func (s *AggregateCommandHandlerSuite) Benchmark_Dispatcher(c *C) {
 	repo := &MockRepository{
-		aggregates: make(map[UUID]Aggregate),
+		aggregates: make(map[string]Aggregate),
 	}
 	handler, _ := NewAggregateCommandHandler(repo)
 	agg := &TestDispatcherAggregate{
-		AggregateBase: NewAggregateBase(NewUUID()),
+		AggregateBase: NewAggregateBase(uuid.New()),
 	}
 	repo.aggregates[agg.AggregateID()] = agg
 	handler.SetAggregate(agg, &TestCommand{})
@@ -153,106 +155,106 @@ func (s *AggregateCommandHandlerSuite) Benchmark_Dispatcher(c *C) {
 }
 
 func (s *AggregateCommandHandlerSuite) Test_CheckCommand_AllFields(c *C) {
-	err := s.handler.checkCommand(&TestCommand{NewUUID(), "command1"})
+	err := s.handler.checkCommand(&TestCommand{uuid.New(), "command1"})
 	c.Assert(err, Equals, nil)
 }
 
 type TestCommandValue struct {
-	TestID  UUID
+	TestID  string
 	Content string
 }
 
-func (t *TestCommandValue) AggregateID() UUID     { return t.TestID }
+func (t *TestCommandValue) AggregateID() string   { return t.TestID }
 func (t *TestCommandValue) AggregateType() string { return "Test" }
 func (t *TestCommandValue) CommandType() string   { return "TestCommandValue" }
 
 func (s *AggregateCommandHandlerSuite) Test_CheckCommand_MissingRequired_Value(c *C) {
-	err := s.handler.checkCommand(&TestCommandValue{TestID: NewUUID()})
+	err := s.handler.checkCommand(&TestCommandValue{TestID: uuid.New()})
 	c.Assert(err, ErrorMatches, "missing field: Content")
 }
 
 type TestCommandSlice struct {
-	TestID UUID
+	TestID string
 	Slice  []string
 }
 
-func (t *TestCommandSlice) AggregateID() UUID     { return t.TestID }
+func (t *TestCommandSlice) AggregateID() string   { return t.TestID }
 func (t *TestCommandSlice) AggregateType() string { return "Test" }
 func (t *TestCommandSlice) CommandType() string   { return "TestCommandSlice" }
 
 func (s *AggregateCommandHandlerSuite) Test_CheckCommand_MissingRequired_Slice(c *C) {
-	err := s.handler.checkCommand(&TestCommandSlice{TestID: NewUUID()})
+	err := s.handler.checkCommand(&TestCommandSlice{TestID: uuid.New()})
 	c.Assert(err, ErrorMatches, "missing field: Slice")
 }
 
 type TestCommandMap struct {
-	TestID UUID
+	TestID string
 	Map    map[string]string
 }
 
-func (t *TestCommandMap) AggregateID() UUID     { return t.TestID }
+func (t *TestCommandMap) AggregateID() string   { return t.TestID }
 func (t *TestCommandMap) AggregateType() string { return "Test" }
 func (t *TestCommandMap) CommandType() string   { return "TestCommandMap" }
 
 func (s *AggregateCommandHandlerSuite) Test_CheckCommand_MissingRequired_Map(c *C) {
-	err := s.handler.checkCommand(&TestCommandMap{TestID: NewUUID()})
+	err := s.handler.checkCommand(&TestCommandMap{TestID: uuid.New()})
 	c.Assert(err, ErrorMatches, "missing field: Map")
 }
 
 type TestCommandStruct struct {
-	TestID UUID
+	TestID string
 	Struct struct {
 		Test string
 	}
 }
 
-func (t *TestCommandStruct) AggregateID() UUID     { return t.TestID }
+func (t *TestCommandStruct) AggregateID() string   { return t.TestID }
 func (t *TestCommandStruct) AggregateType() string { return "Test" }
 func (t *TestCommandStruct) CommandType() string   { return "TestCommandStruct" }
 
 func (s *AggregateCommandHandlerSuite) Test_CheckCommand_MissingRequired_Struct(c *C) {
-	err := s.handler.checkCommand(&TestCommandStruct{TestID: NewUUID()})
+	err := s.handler.checkCommand(&TestCommandStruct{TestID: uuid.New()})
 	c.Assert(err, ErrorMatches, "missing field: Struct")
 }
 
 type TestCommandTime struct {
-	TestID UUID
+	TestID string
 	Time   time.Time
 }
 
-func (t *TestCommandTime) AggregateID() UUID     { return t.TestID }
+func (t *TestCommandTime) AggregateID() string   { return t.TestID }
 func (t *TestCommandTime) AggregateType() string { return "Test" }
 func (t *TestCommandTime) CommandType() string   { return "TestCommandTime" }
 
 func (s *AggregateCommandHandlerSuite) Test_CheckCommand_MissingRequired_Time(c *C) {
-	err := s.handler.checkCommand(&TestCommandTime{TestID: NewUUID()})
+	err := s.handler.checkCommand(&TestCommandTime{TestID: uuid.New()})
 	c.Assert(err, ErrorMatches, "missing field: Time")
 }
 
 type TestCommandOptional struct {
-	TestID  UUID
+	TestID  string
 	Content string `eh:"optional"`
 }
 
-func (t *TestCommandOptional) AggregateID() UUID     { return t.TestID }
+func (t *TestCommandOptional) AggregateID() string   { return t.TestID }
 func (t *TestCommandOptional) AggregateType() string { return "Test" }
 func (t *TestCommandOptional) CommandType() string   { return "TestCommandOptional" }
 
 func (s *AggregateCommandHandlerSuite) Test_CheckCommand_MissingOptionalField(c *C) {
-	err := s.handler.checkCommand(&TestCommandOptional{TestID: NewUUID()})
+	err := s.handler.checkCommand(&TestCommandOptional{TestID: uuid.New()})
 	c.Assert(err, Equals, nil)
 }
 
 type TestCommandPrivate struct {
-	TestID  UUID
+	TestID  string
 	private string
 }
 
-func (t *TestCommandPrivate) AggregateID() UUID     { return t.TestID }
+func (t *TestCommandPrivate) AggregateID() string   { return t.TestID }
 func (t *TestCommandPrivate) AggregateType() string { return "Test" }
 func (t *TestCommandPrivate) CommandType() string   { return "TestCommandPrivate" }
 
 func (s *AggregateCommandHandlerSuite) Test_CheckCommand_MissingPrivateField(c *C) {
-	err := s.handler.checkCommand(&TestCommandPrivate{TestID: NewUUID()})
+	err := s.handler.checkCommand(&TestCommandPrivate{TestID: uuid.New()})
 	c.Assert(err, Equals, nil)
 }

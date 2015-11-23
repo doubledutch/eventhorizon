@@ -4,26 +4,27 @@ services:
     - wercker/mongodb
     - wercker/redis
     - wercker/postgresql
+    - wercker/rabbitmq
 
 build:
   steps:
     # Sets the go workspace and places you package
     # at the right place in the workspace tree
-    - setup-go-workspace
-
+    - setup-go-workspace:
+        package-dir: github.com/looplab/eventhorizon
     # Gets the dependencies
     - script:
         name: go get
         code: |
           cd $WERCKER_SOURCE_DIR
           go version
-          go get -tags 'mongo redis postgres' -t ./...
+          go get -v -tags 'mongo redis postgres rabbitmq' -t ./...
 
     # Build the project
     - script:
         name: go build
         code: |
-          go build -tags 'mongo redis postgres' ./...
+          go build -v -tags 'mongo redis postgres rabbitmq' ./...
 
     # Test the project
     - script:
@@ -32,6 +33,4 @@ build:
           go get -d golang.org/x/tools/cmd/cover
           go get github.com/axw/gocov/gocov
           go get github.com/mattn/goveralls
-          git checkout master
-          gocov test -tags 'mongo redis postgres' > gocov.json
-          goveralls -gocovdata=gocov.json -service wercker.com -repotoken $COVERALLS_TOKEN
+          gocov test -check.v -tags 'mongo redis postgres rabbitmq' > gocov.json

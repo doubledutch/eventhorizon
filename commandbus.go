@@ -18,10 +18,10 @@ import (
 	"errors"
 )
 
-// Error returned when a handler is already registered for a command.
+// ErrHandlerAlreadySet returned when a handler is already registered for a command.
 var ErrHandlerAlreadySet = errors.New("handler is already set")
 
-// Error returned when no handler can be found.
+// ErrHandlerNotFound returned when no handler can be found.
 var ErrHandlerNotFound = errors.New("no handlers for command")
 
 // CommandHandler is an interface that all handlers of commands should implement.
@@ -31,10 +31,19 @@ type CommandHandler interface {
 
 // CommandBus is an interface defining an event bus for distributing events.
 type CommandBus interface {
-	// HandleCommand handles a command on the event bus.
+	// PublishCommand publishes a command on the command bus.
+	PublishCommand(Command) error
+	// HandleCommand handles a command on the command bus.
 	HandleCommand(Command) error
 	// SetHandler registers a handler with a command.
 	SetHandler(CommandHandler, Command) error
+}
+
+// RemoteCommandBus is a command bus that using a networked service.
+type RemoteCommandBus interface {
+	CommandBus
+	RegisterCommandType(command Command, factory func() Command) error
+	Close() error
 }
 
 // InternalCommandBus is a command bus that handles commands with the
@@ -44,11 +53,16 @@ type InternalCommandBus struct {
 }
 
 // NewInternalCommandBus creates a InternalCommandBus.
-func NewInternalCommandBus() *InternalCommandBus {
+func NewInternalCommandBus() CommandBus {
 	b := &InternalCommandBus{
 		handlers: make(map[string]CommandHandler),
 	}
 	return b
+}
+
+// PublishCommand publishes a command to the internal command bus.
+func (b *InternalCommandBus) PublishCommand(command Command) error {
+	return b.HandleCommand(command)
 }
 
 // HandleCommand handles a command with a handler capable of handling it.

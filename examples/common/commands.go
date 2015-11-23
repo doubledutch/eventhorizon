@@ -14,33 +14,29 @@
 
 package common
 
-import (
-	"github.com/looplab/eventhorizon"
-)
-
 type CreateInvite struct {
-	InvitationID eventhorizon.UUID
-	EventID      eventhorizon.UUID
+	InvitationID string
+	EventID      string
 	Name         string
 	Age          int `eh:"optional"`
 }
 
-func (c *CreateInvite) AggregateID() eventhorizon.UUID { return c.InvitationID }
-func (c *CreateInvite) AggregateType() string          { return "Invitation" }
-func (c *CreateInvite) CommandType() string            { return "CreateInvite" }
+func (c *CreateInvite) AggregateID() string   { return c.InvitationID }
+func (c *CreateInvite) AggregateType() string { return "Invitation" }
+func (c *CreateInvite) CommandType() string   { return "CreateInvite" }
 
 type AcceptInvite struct {
-	InvitationID eventhorizon.UUID
+	InvitationID string
 }
 
-func (c *AcceptInvite) AggregateID() eventhorizon.UUID { return c.InvitationID }
-func (c *AcceptInvite) AggregateType() string          { return "Invitation" }
-func (c *AcceptInvite) CommandType() string            { return "AcceptInvite" }
+func (c *AcceptInvite) AggregateID() string   { return c.InvitationID }
+func (c *AcceptInvite) AggregateType() string { return "Invitation" }
+func (c *AcceptInvite) CommandType() string   { return "AcceptInvite" }
 
 type DeclineInvite struct {
-	InvitationID eventhorizon.UUID
+	InvitationID string
 }
 
-func (c *DeclineInvite) AggregateID() eventhorizon.UUID { return c.InvitationID }
-func (c *DeclineInvite) AggregateType() string          { return "Invitation" }
-func (c *DeclineInvite) CommandType() string            { return "DeclineInvite" }
+func (c *DeclineInvite) AggregateID() string   { return c.InvitationID }
+func (c *DeclineInvite) AggregateType() string { return "Invitation" }
+func (c *DeclineInvite) CommandType() string   { return "DeclineInvite" }
