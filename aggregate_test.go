@@ -15,6 +15,7 @@
 package eventhorizon
 
 import (
+	"github.com/odeke-em/go-uuid"
 	. "gopkg.in/check.v1"
 )
 
@@ -23,7 +24,7 @@ var _ = Suite(&AggregateBaseSuite{})
 type AggregateBaseSuite struct{}
 
 func (s *AggregateBaseSuite) Test_NewAggregateBase(c *C) {
-	id := NewUUID()
+	id := uuid.New()
 	agg := NewAggregateBase(id)
 	c.Assert(agg, NotNil)
 	c.Assert(agg.AggregateID(), Equals, id)
@@ -31,31 +32,31 @@ func (s *AggregateBaseSuite) Test_NewAggregateBase(c *C) {
 }
 
 func (s *AggregateBaseSuite) Test_IncrementVersion(c *C) {
-	agg := NewAggregateBase(NewUUID())
+	agg := NewAggregateBase(uuid.New())
 	c.Assert(agg.Version(), Equals, 0)
 	agg.IncrementVersion()
 	c.Assert(agg.Version(), Equals, 1)
 }
 
 func (s *AggregateBaseSuite) Test_StoreEvent_OneEvent(c *C) {
-	agg := NewAggregateBase(NewUUID())
-	event1 := &TestEvent{NewUUID(), "event1"}
+	agg := NewAggregateBase(uuid.New())
+	event1 := &TestEvent{uuid.New(), "event1"}
 	agg.StoreEvent(event1)
 	c.Assert(agg.GetUncommittedEvents(), DeepEquals, []Event{event1})
 }
 
 func (s *AggregateBaseSuite) Test_StoreEvent_TwoEvents(c *C) {
-	agg := NewAggregateBase(NewUUID())
-	event1 := &TestEvent{NewUUID(), "event1"}
-	event2 := &TestEvent{NewUUID(), "event2"}
+	agg := NewAggregateBase(uuid.New())
+	event1 := &TestEvent{uuid.New(), "event1"}
+	event2 := &TestEvent{uuid.New(), "event2"}
 	agg.StoreEvent(event1)
 	agg.StoreEvent(event2)
 	c.Assert(agg.GetUncommittedEvents(), DeepEquals, []Event{event1, event2})
 }
 
 func (s *AggregateBaseSuite) Test_ClearUncommittedEvent_OneEvent(c *C) {
-	agg := NewAggregateBase(NewUUID())
-	event1 := &TestEvent{NewUUID(), "event1"}
+	agg := NewAggregateBase(uuid.New())
+	event1 := &TestEvent{uuid.New(), "event1"}
 	agg.StoreEvent(event1)
 	c.Assert(agg.GetUncommittedEvents(), DeepEquals, []Event{event1})
 	agg.ClearUncommittedEvents()

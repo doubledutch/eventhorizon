@@ -21,49 +21,15 @@ import (
 var _ = Suite(&InternalCommandBusSuite{})
 
 type InternalCommandBusSuite struct {
-	bus *InternalCommandBus
+	CommandBusSuite
 }
 
 func (s *InternalCommandBusSuite) SetUpTest(c *C) {
-	s.bus = NewInternalCommandBus()
+	bus := NewInternalCommandBus()
+	s.Setup(bus)
 }
 
 func (s *InternalCommandBusSuite) Test_NewHandlerCommandBus(c *C) {
 	bus := NewInternalCommandBus()
 	c.Assert(bus, Not(Equals), nil)
-}
-
-type TestCommandHandler struct {
-	command Command
-}
-
-func (t *TestCommandHandler) HandleCommand(command Command) error {
-	t.command = command
-	return nil
-}
-
-func (s *InternalCommandBusSuite) Test_HandleCommand_Simple(c *C) {
-	handler := &TestCommandHandler{}
-	err := s.bus.SetHandler(handler, &TestCommand{})
-	c.Assert(err, IsNil)
-	command1 := &TestCommand{NewUUID(), "command1"}
-	err = s.bus.HandleCommand(command1)
-	c.Assert(err, IsNil)
-	c.Assert(handler.command, Equals, command1)
-}
-
-func (s *InternalCommandBusSuite) Test_HandleCommand_NoHandler(c *C) {
-	handler := &TestCommandHandler{}
-	command1 := &TestCommand{NewUUID(), "command1"}
-	err := s.bus.HandleCommand(command1)
-	c.Assert(err, Equals, ErrHandlerNotFound)
-	c.Assert(handler.command, IsNil)
-}
-
-func (s *InternalCommandBusSuite) Test_SetHandler_Twice(c *C) {
-	handler := &TestCommandHandler{}
-	err := s.bus.SetHandler(handler, &TestCommand{})
-	c.Assert(err, IsNil)
-	err = s.bus.SetHandler(handler, &TestCommand{})
-	c.Assert(err, Equals, ErrHandlerAlreadySet)
 }

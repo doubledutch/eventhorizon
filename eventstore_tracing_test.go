@@ -1,6 +1,7 @@
 package eventhorizon
 
 import (
+	"github.com/odeke-em/go-uuid"
 	. "gopkg.in/check.v1"
 )
 
@@ -27,7 +28,7 @@ func (s *TraceEventStoreSuite) Test_AppendNoEvents_NotTracing(c *C) {
 }
 
 func (s *TraceEventStoreSuite) Test_OneEvent_NotTracing(c *C) {
-	event1 := &TestEvent{NewUUID(), "event1"}
+	event1 := &TestEvent{uuid.New(), "event1"}
 	err := s.store.Save([]Event{event1})
 	c.Assert(err, IsNil)
 	events, err := s.store.Load(event1.TestID)
@@ -37,7 +38,7 @@ func (s *TraceEventStoreSuite) Test_OneEvent_NotTracing(c *C) {
 }
 
 func (s *TraceEventStoreSuite) Test_TwoEvents_NotTracing(c *C) {
-	event1 := &TestEvent{NewUUID(), "event1"}
+	event1 := &TestEvent{uuid.New(), "event1"}
 	event2 := &TestEvent{event1.TestID, "event2"}
 	err := s.store.Save([]Event{event1, event2})
 	c.Assert(err, IsNil)
@@ -49,8 +50,8 @@ func (s *TraceEventStoreSuite) Test_TwoEvents_NotTracing(c *C) {
 }
 
 func (s *TraceEventStoreSuite) Test_DifferentAggregates_NotTracing(c *C) {
-	event1 := &TestEvent{NewUUID(), "event1"}
-	event2 := &TestEvent{NewUUID(), "event2"}
+	event1 := &TestEvent{uuid.New(), "event1"}
+	event2 := &TestEvent{uuid.New(), "event2"}
 	err := s.store.Save([]Event{event1, event2})
 	c.Assert(err, IsNil)
 	events, err := s.store.Load(event1.TestID)
@@ -73,7 +74,7 @@ func (s *TraceEventStoreSuite) Test_NoEvents_Tracing(c *C) {
 }
 
 func (s *TraceEventStoreSuite) Test_OneEvent_Tracing(c *C) {
-	event1 := &TestEvent{NewUUID(), "event1"}
+	event1 := &TestEvent{uuid.New(), "event1"}
 	s.store.StartTracing()
 	err := s.store.Save([]Event{event1})
 	c.Assert(err, IsNil)
@@ -84,7 +85,7 @@ func (s *TraceEventStoreSuite) Test_OneEvent_Tracing(c *C) {
 }
 
 func (s *TraceEventStoreSuite) Test_TwoEvents_Tracing(c *C) {
-	event1 := &TestEvent{NewUUID(), "event1"}
+	event1 := &TestEvent{uuid.New(), "event1"}
 	event2 := &TestEvent{event1.TestID, "event2"}
 	s.store.StartTracing()
 	err := s.store.Save([]Event{event1, event2})
@@ -97,7 +98,7 @@ func (s *TraceEventStoreSuite) Test_TwoEvents_Tracing(c *C) {
 }
 
 func (s *TraceEventStoreSuite) Test_OneOfTwoEvents_Tracing(c *C) {
-	event1 := &TestEvent{NewUUID(), "event1"}
+	event1 := &TestEvent{uuid.New(), "event1"}
 	event2 := &TestEvent{event1.TestID, "event2"}
 	err := s.store.Save([]Event{event1})
 	c.Assert(err, IsNil)
@@ -111,7 +112,7 @@ func (s *TraceEventStoreSuite) Test_OneOfTwoEvents_Tracing(c *C) {
 }
 
 func (s *TraceEventStoreSuite) Test_OneOfTwoEventsOtherOrder_Tracing(c *C) {
-	event1 := &TestEvent{NewUUID(), "event1"}
+	event1 := &TestEvent{uuid.New(), "event1"}
 	event2 := &TestEvent{event1.TestID, "event2"}
 	s.store.StartTracing()
 	err := s.store.Save([]Event{event1})
@@ -125,8 +126,8 @@ func (s *TraceEventStoreSuite) Test_OneOfTwoEventsOtherOrder_Tracing(c *C) {
 }
 
 func (s *TraceEventStoreSuite) Test_DifferentAggregates_Tracing(c *C) {
-	event1 := &TestEvent{NewUUID(), "event1"}
-	event2 := &TestEvent{NewUUID(), "event2"}
+	event1 := &TestEvent{uuid.New(), "event1"}
+	event2 := &TestEvent{uuid.New(), "event2"}
 	s.store.StartTracing()
 	err := s.store.Save([]Event{event1, event2})
 	c.Assert(err, IsNil)
@@ -139,7 +140,7 @@ func (s *TraceEventStoreSuite) Test_DifferentAggregates_Tracing(c *C) {
 
 func (s *TraceEventStoreSuite) Test_OneEvent_NoBaseStore(c *C) {
 	store := NewTraceEventStore(nil)
-	event1 := &TestEvent{NewUUID(), "event1"}
+	event1 := &TestEvent{uuid.New(), "event1"}
 	store.StartTracing()
 	err := store.Save([]Event{event1})
 	c.Assert(err, IsNil)
@@ -151,19 +152,19 @@ func (s *TraceEventStoreSuite) Test_OneEvent_NoBaseStore(c *C) {
 
 func (s *TraceEventStoreSuite) Test_LoadNoBaseStore(c *C) {
 	store := NewTraceEventStore(nil)
-	events, err := store.Load(NewUUID())
+	events, err := store.Load(uuid.New())
 	c.Assert(err, ErrorMatches, "no event store defined")
 	c.Assert(events, DeepEquals, []Event(nil))
 }
 
 func (s *TraceEventStoreSuite) Test_LoadNoEvents(c *C) {
-	events, err := s.store.Load(NewUUID())
+	events, err := s.store.Load(uuid.New())
 	c.Assert(err, ErrorMatches, "could not find events")
 	c.Assert(events, DeepEquals, []Event(nil))
 }
 
 func (s *TraceEventStoreSuite) Test_ResetTrace(c *C) {
-	event1 := &TestEvent{NewUUID(), "event1"}
+	event1 := &TestEvent{uuid.New(), "event1"}
 	s.store.StartTracing()
 	err := s.store.Save([]Event{event1})
 	c.Assert(err, IsNil)

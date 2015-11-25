@@ -30,7 +30,7 @@ var ErrAggregateNotRegistered = errors.New("aggregate is not registered")
 // Repository is a repository responsible for loading and saving aggregates.
 type Repository interface {
 	// Load loads an aggregate with a type and id.
-	Load(string, UUID) (Aggregate, error)
+	Load(string, string) (Aggregate, error)
 
 	// Save saves an aggregets uncommitted events.
 	Save(Aggregate) error
@@ -39,7 +39,7 @@ type Repository interface {
 // CallbackRepository is an aggregate repository using factory functions.
 type CallbackRepository struct {
 	eventStore EventStore
-	callbacks  map[string]func(UUID) Aggregate
+	callbacks  map[string]func(string) Aggregate
 }
 
 // NewCallbackRepository creates a repository and associates it with an event store.
@@ -50,7 +50,7 @@ func NewCallbackRepository(eventStore EventStore) (*CallbackRepository, error) {
 
 	d := &CallbackRepository{
 		eventStore: eventStore,
-		callbacks:  make(map[string]func(UUID) Aggregate),
+		callbacks:  make(map[string]func(string) Aggregate),
 	}
 	return d, nil
 }
@@ -60,7 +60,7 @@ func NewCallbackRepository(eventStore EventStore) (*CallbackRepository, error) {
 //
 // An example would be:
 //     repository.RegisterAggregate(&Aggregate{}, func(id UUID) interface{} { return &Aggregate{id} })
-func (r *CallbackRepository) RegisterAggregate(aggregate Aggregate, callback func(UUID) Aggregate) error {
+func (r *CallbackRepository) RegisterAggregate(aggregate Aggregate, callback func(string) Aggregate) error {
 	if _, ok := r.callbacks[aggregate.AggregateType()]; ok {
 		return ErrAggregateAlreadyRegistered
 	}
@@ -71,7 +71,7 @@ func (r *CallbackRepository) RegisterAggregate(aggregate Aggregate, callback fun
 }
 
 // Load loads an aggregate by creating it and applying all events.
-func (r *CallbackRepository) Load(aggregateType string, id UUID) (Aggregate, error) {
+func (r *CallbackRepository) Load(aggregateType string, id string) (Aggregate, error) {
 	// Get the registered factory function for creating aggregates.
 	f, ok := r.callbacks[aggregateType]
 	if !ok {

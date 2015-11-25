@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/doubledutch/lager"
 	"github.com/jmoiron/sqlx"
 	// PostgreSQL driver
 	_ "github.com/lib/pq"
@@ -37,16 +38,23 @@ type PostgresReadRepository struct {
 	table   string
 	factory func() interface{}
 	stmts   map[string]string
+
+	lgr lager.ContextLager
 }
 
 // NewPostgresReadRepository creates a new PostgresReadRepository.
 func NewPostgresReadRepository(conn, table string) (*PostgresReadRepository, error) {
+	lgr := lager.Child()
+	lgr.Set("table", table)
+
 	db, err := initDB(conn)
 	if err != nil {
 		return nil, err
 	}
 
 	create := fmt.Sprintf(`
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA public;
+
 CREATE TABLE IF NOT EXISTS %s (
   data jsonb
 );
@@ -54,7 +62,6 @@ CREATE TABLE IF NOT EXISTS %s (
 
 	_, err = db.Exec(create)
 	if err != nil {
-		fmt.Println(err)
 		return nil, ErrCouldNotCreateTables
 	}
 
@@ -71,11 +78,12 @@ CREATE TABLE IF NOT EXISTS %s (
 		db:    db,
 		table: table,
 		stmts: stmts,
+		lgr:   lgr,
 	}, nil
 }
 
 // Save saves a read model with id to the repository.
-func (r *PostgresReadRepository) Save(id UUID, model interface{}) error {
+func (r *PostgresReadRepository) Save(id string, model interface{}) error {
 	b, err := json.Marshal(model)
 	if err != nil {
 		return err
@@ -88,9 +96,8 @@ func (r *PostgresReadRepository) Save(id UUID, model interface{}) error {
 
 	if existing != nil {
 		// Update
-		_, err = r.db.Exec(r.stmts["update"], b, id.String())
+		_, err = r.db.Exec(r.stmts["update"], b, id)
 		if err != nil {
-			fmt.Println(err)
 			return ErrCouldNotSaveModel
 		}
 		return nil
@@ -110,13 +117,13 @@ type postgresModel struct {
 }
 
 // Find returns one read model with using an id.
-func (r *PostgresReadRepository) Find(id UUID) (interface{}, error) {
+func (r *PostgresReadRepository) Find(id string) (interface{}, error) {
 	if r.factory == nil {
 		return nil, ErrModelNotSet
 	}
 
 	var pModel postgresModel
-	err := r.db.Get(&pModel, r.stmts["find"], id.String())
+	err := r.db.Get(&pModel, r.stmts["find"], id)
 	if err != nil && err == sql.ErrNoRows {
 		return nil, ErrModelNotFound
 	} else if err != nil {
@@ -153,8 +160,8 @@ func (r *PostgresReadRepository) FindAll() ([]interface{}, error) {
 }
 
 // Remove removes a read model with id from the repository.
-func (r *PostgresReadRepository) Remove(id UUID) error {
-	result, err := r.db.Exec(r.stmts["remove"], id.String())
+func (r *PostgresReadRepository) Remove(id string) error {
+	result, err := r.db.Exec(r.stmts["remove"], id)
 	if num, err := result.RowsAffected(); err != nil {
 		return err
 	} else if num == 0 {
@@ -165,6 +172,7 @@ func (r *PostgresReadRepository) Remove(id UUID) error {
 
 // SetModel sets a factory function that creates concrete model types.
 func (r *PostgresReadRepository) SetModel(factory func() interface{}) {
+	r.lgr.Debugf("Set model")
 	r.factory = factory
 }
 

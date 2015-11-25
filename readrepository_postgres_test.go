@@ -1,10 +1,8 @@
+// +build postgres
+
 package eventhorizon
 
-import (
-	"os"
-
-	. "gopkg.in/check.v1"
-)
+import . "gopkg.in/check.v1"
 
 var _ = Suite(&PostgresReadRepositorySuite{})
 
@@ -14,13 +12,13 @@ type PostgresReadRepositorySuite struct {
 }
 
 func (s *PostgresReadRepositorySuite) SetUpSuite(c *C) {
-	s.url = os.Getenv("WERCKER_POSTGRESQL_URL")
+	s.url = initializePostgresURL()
 }
 
 func (s *PostgresReadRepositorySuite) SetUpTest(c *C) {
 	repo, err := NewPostgresReadRepository(s.url, "testmodel")
-	repo.SetModel(func() interface{} { return &TestModel{} })
 	c.Assert(err, IsNil)
+	repo.SetModel(func() interface{} { return &TestModel{} })
 	repo.Clear()
 
 	s.Setup(repo)

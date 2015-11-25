@@ -5,14 +5,14 @@ import "time"
 // MemoryEventStore implements EventStore as an in memory structure.
 type MemoryEventStore struct {
 	eventBus         EventBus
-	aggregateRecords map[UUID]*memoryAggregateRecord
+	aggregateRecords map[string]*memoryAggregateRecord
 }
 
 // NewMemoryEventStore creates a new MemoryEventStore.
 func NewMemoryEventStore(eventBus EventBus) *MemoryEventStore {
 	s := &MemoryEventStore{
 		eventBus:         eventBus,
-		aggregateRecords: make(map[UUID]*memoryAggregateRecord),
+		aggregateRecords: make(map[string]*memoryAggregateRecord),
 	}
 	return s
 }
@@ -53,7 +53,7 @@ func (s *MemoryEventStore) Save(events []Event) error {
 
 // Load loads all events for the aggregate id from the memory store.
 // Returns ErrNoEventsFound if no events can be found.
-func (s *MemoryEventStore) Load(id UUID) ([]Event, error) {
+func (s *MemoryEventStore) Load(id string) ([]Event, error) {
 	if a, ok := s.aggregateRecords[id]; ok {
 		events := make([]Event, len(a.events))
 		for i, r := range a.events {
@@ -71,7 +71,7 @@ func (s *MemoryEventStore) Close() error {
 }
 
 type memoryAggregateRecord struct {
-	aggregateID UUID
+	aggregateID string
 	version     int
 	events      []*memoryEventRecord
 }

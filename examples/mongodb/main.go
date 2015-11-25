@@ -25,16 +25,17 @@ import (
 
 func main() {
 	eventBus := eventhorizon.NewInternalEventBus()
+	commandBus := eventhorizon.NewInternalCommandBus()
 	addr := "localhost"
 	db := "demo"
 
-	newEventStore := func() (eventhorizon.RemoteEventStore, error) {
+	newEventStore := func() (eventhorizon.EventStore, error) {
 		return eventhorizon.NewMongoEventStore(eventBus, addr, db)
 	}
 
-	newReadRepository := func(name string) (eventhorizon.RemoteReadRepository, error) {
+	newReadRepository := func(name string) (eventhorizon.ReadRepository, error) {
 		return eventhorizon.NewMongoReadRepository(addr, db, name)
 	}
 
-	common.Run(eventBus, newEventStore, newReadRepository)
+	common.Run(eventBus, commandBus, newEventStore, newReadRepository)
 }

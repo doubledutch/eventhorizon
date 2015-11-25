@@ -20,6 +20,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/odeke-em/go-uuid"
+
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
@@ -36,8 +38,8 @@ type MongoReadRepositorySuite struct {
 
 func (s *MongoReadRepositorySuite) SetUpSuite(c *C) {
 	// Support Wercker testing with MongoDB.
-	host := os.Getenv("WERCKER_MONGODB_HOST")
-	port := os.Getenv("WERCKER_MONGODB_PORT")
+	host := os.Getenv("MONGO_PORT_27017_TCP_ADDR")
+	port := os.Getenv("MONGO_PORT_27017_TCP_PORT")
 
 	if host != "" && port != "" {
 		s.url = host + ":" + port
@@ -49,8 +51,8 @@ func (s *MongoReadRepositorySuite) SetUpSuite(c *C) {
 func (s *MongoReadRepositorySuite) SetUpTest(c *C) {
 	var err error
 	s.repo, err = NewMongoReadRepository(s.url, "test", "testmodel")
-	s.repo.SetModel(func() interface{} { return &TestModel{} })
 	c.Assert(err, IsNil)
+	s.repo.SetModel(func() interface{} { return &TestModel{} })
 	s.repo.Clear()
 
 	s.Setup(s.repo)
@@ -67,7 +69,7 @@ func (s *MongoReadRepositorySuite) Test_NewMongoReadRepository(c *C) {
 }
 
 func (s *MongoReadRepositorySuite) Test_FindCustom(c *C) {
-	model1 := &TestModel{NewUUID(), "model1", time.Now().Round(time.Millisecond)}
+	model1 := &TestModel{uuid.New(), "model1", time.Now().Round(time.Millisecond)}
 	err := s.repo.Save(model1.ID, model1)
 	c.Assert(err, IsNil)
 	models, err := s.repo.FindCustom(func(c *mgo.Collection) *mgo.Query {

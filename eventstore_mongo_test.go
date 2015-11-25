@@ -1,3 +1,5 @@
+// +build mongo
+
 package eventhorizon
 
 import (
@@ -6,6 +8,8 @@ import (
 	. "gopkg.in/check.v1"
 )
 
+var _ = Suite(&MongoEventStoreSuite{})
+
 type MongoEventStoreSuite struct {
 	url string
 	RemoteEventStoreSuite
@@ -13,8 +17,14 @@ type MongoEventStoreSuite struct {
 
 func (s *MongoEventStoreSuite) SetUpSuite(c *C) {
 	// Support Wercker testing with MongoDB.
-	host := os.Getenv("WERCKER_MONGODB_HOST")
-	port := os.Getenv("WERCKER_MONGODB_PORT")
+	host := os.Getenv("MONGO_PORT_27017_TCP_ADDR")
+	if host == "" {
+		host = os.Getenv("WERCKER_MONGODB_HOST")
+	}
+	port := os.Getenv("MONGO_PORT_27017_TCP_PORT")
+	if port == "" {
+		port = os.Getenv("WERCKER_MONGODB_PORT")
+	}
 
 	if host != "" && port != "" {
 		s.url = host + ":" + port

@@ -31,7 +31,7 @@ func (s *TraceEventStore) Save(events []Event) error {
 
 // Load loads all events for the aggregate id from the base store.
 // Returns ErrNoEventStoreDefined if no event store could be found.
-func (s *TraceEventStore) Load(id UUID) ([]Event, error) {
+func (s *TraceEventStore) Load(id string) ([]Event, error) {
 	if s.eventStore != nil {
 		return s.eventStore.Load(id)
 	}

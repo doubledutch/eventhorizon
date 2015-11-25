@@ -39,7 +39,7 @@ func NewMongoReadRepositoryWithSession(session *mgo.Session, database, collectio
 }
 
 // Save saves a read model with id to the repository.
-func (r *MongoReadRepository) Save(id UUID, model interface{}) error {
+func (r *MongoReadRepository) Save(id string, model interface{}) error {
 	sess := r.session.Copy()
 	defer sess.Close()
 
@@ -51,7 +51,7 @@ func (r *MongoReadRepository) Save(id UUID, model interface{}) error {
 
 // Find returns one read model with using an id. Returns
 // ErrModelNotFound if no model could be found.
-func (r *MongoReadRepository) Find(id UUID) (interface{}, error) {
+func (r *MongoReadRepository) Find(id string) (interface{}, error) {
 	sess := r.session.Copy()
 	defer sess.Close()
 
@@ -119,7 +119,7 @@ func (r *MongoReadRepository) FindAll() ([]interface{}, error) {
 
 // Remove removes a read model with id from the repository. Returns
 // ErrModelNotFound if no model could be found.
-func (r *MongoReadRepository) Remove(id UUID) error {
+func (r *MongoReadRepository) Remove(id string) error {
 	sess := r.session.Copy()
 	defer sess.Close()
 

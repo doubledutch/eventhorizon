@@ -15,6 +15,7 @@
 package eventhorizon
 
 import (
+	"github.com/odeke-em/go-uuid"
 	. "gopkg.in/check.v1"
 )
 
@@ -40,7 +41,7 @@ func (s *InternalEventBusSuite) Test_PublishEvent_Simple(c *C) {
 	s.bus.AddHandler(handler, &TestEvent{})
 	s.bus.AddLocalHandler(localHandler)
 	s.bus.AddGlobalHandler(globalHandler)
-	event1 := &TestEvent{NewUUID(), "event1"}
+	event1 := &TestEvent{uuid.New(), "event1"}
 	s.bus.PublishEvent(event1)
 	c.Assert(handler.events[0], Equals, event1)
 	c.Assert(localHandler.events[0], Equals, event1)
@@ -54,7 +55,7 @@ func (s *InternalEventBusSuite) Test_PublishEvent_AnotherEvent(c *C) {
 	s.bus.AddHandler(handler, &TestEventOther{})
 	s.bus.AddLocalHandler(localHandler)
 	s.bus.AddGlobalHandler(globalHandler)
-	event1 := &TestEvent{NewUUID(), "event1"}
+	event1 := &TestEvent{uuid.New(), "event1"}
 	s.bus.PublishEvent(event1)
 	c.Assert(handler.events, HasLen, 0)
 	c.Assert(localHandler.events[0], Equals, event1)
@@ -66,7 +67,7 @@ func (s *InternalEventBusSuite) Test_PublishEvent_NoHandler(c *C) {
 	globalHandler := NewMockEventHandler()
 	s.bus.AddLocalHandler(localHandler)
 	s.bus.AddGlobalHandler(globalHandler)
-	event1 := &TestEvent{NewUUID(), "event1"}
+	event1 := &TestEvent{uuid.New(), "event1"}
 	s.bus.PublishEvent(event1)
 	c.Assert(localHandler.events[0], Equals, event1)
 	c.Assert(globalHandler.events[0], Equals, event1)
@@ -75,7 +76,7 @@ func (s *InternalEventBusSuite) Test_PublishEvent_NoHandler(c *C) {
 func (s *InternalEventBusSuite) Test_PublishEvent_NoLocalOrGlobalHandler(c *C) {
 	handler := NewMockEventHandler()
 	s.bus.AddHandler(handler, &TestEvent{})
-	event1 := &TestEvent{NewUUID(), "event1"}
+	event1 := &TestEvent{uuid.New(), "event1"}
 	s.bus.PublishEvent(event1)
 	c.Assert(handler.events[0], Equals, event1)
 }
